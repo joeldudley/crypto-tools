@@ -1,6 +1,14 @@
 
-/// XORs two byte vectors.
-fn xor(a: &Vec<u8>, b: &Vec<u8>) -> Vec<u8> {
+/// XORs a byte vector against a single byte.
+pub fn xor(vec: &[u8], byte: &u8) -> Vec<u8> {
+    return vec
+        .iter()
+        .map(|&x| x ^ byte)
+        .collect();
+}
+
+/// XORs two byte vectors togethr.
+pub fn xor_vecs(a: &[u8], b: &[u8]) -> Vec<u8> {
     return a
         .iter()
         .zip(b.iter())
@@ -12,8 +20,9 @@ fn xor(a: &Vec<u8>, b: &Vec<u8>) -> Vec<u8> {
 mod tests {
     use crate::bitflips::xor::*;
 
+    // Solution to Cryptopals set 01 challenge 02.
     #[test]
-    fn can_xor_two_byte_vectors() {
+    fn can_xor_vectors() {
         let hex_a = "1c0111001f010100061a024b53535009181c";
         let hex_b = "686974207468652062756c6c277320657965";
         let expected_xor_hex = "746865206b696420646f6e277420706c6179";
@@ -22,6 +31,6 @@ mod tests {
         let bytes_b = hex::decode(hex_b).expect("could not convert hex to bytes");
         let expected_xor_bytes = hex::decode(expected_xor_hex).expect("could not convert hex to bytes");
 
-        assert_eq!(xor(&bytes_a, &bytes_b), expected_xor_bytes)
+        assert_eq!(xor_vecs(&bytes_a, &bytes_b), expected_xor_bytes)
     }
 }
