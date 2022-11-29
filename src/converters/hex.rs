@@ -8,10 +8,10 @@ pub struct ConversionError;
 #[allow(dead_code)]
 pub fn hex_to_base_64(hex: &str) -> Result<String, ConversionError> {
     let bytes_result = hex::decode(hex);
-    return match bytes_result {
+    match bytes_result {
         Ok(bytes) => Ok(base64::encode(bytes)),
         Err(_) => Err(ConversionError),
-    };
+    }
 }
 
 #[cfg(test)]

@@ -29,8 +29,8 @@ mod tests {
 
         let bytes_a = hex::decode(hex_a).expect("could not convert hex to bytes");
         let bytes_b = hex::decode(hex_b).expect("could not convert hex to bytes");
+        let xor_bytes = xor_vecs(&bytes_a, &bytes_b);
         let expected_xor_bytes = hex::decode(expected_xor_hex).expect("could not convert hex to bytes");
-
-        assert_eq!(xor_vecs(&bytes_a, &bytes_b), expected_xor_bytes)
+        assert_eq!(xor_bytes, expected_xor_bytes)
     }
 }

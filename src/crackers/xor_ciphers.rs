@@ -33,7 +33,7 @@ mod tests {
 
         let ciphertext_bytes = hex::decode(ciphertext).expect("could not convert hex to bytes");
         let plaintext = crack_single_byte_xor_cipher(&ciphertext_bytes);
-        assert_eq!(expected_plaintext, plaintext);
+        assert_eq!(plaintext, expected_plaintext);
     }
 
     // Solution to Cryptopals set 01 challenge 03.
