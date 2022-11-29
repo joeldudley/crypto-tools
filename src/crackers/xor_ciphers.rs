@@ -1,21 +1,24 @@
 use crate::bitflips::xor::*;
 use crate::scorers::english_scorers::*;
 
-/// Cracks a ciphertext encoded using a single-byte XOR cipher.
-pub fn crack_single_byte_xor_cipher(bytes: &[u8]) -> String {
-    let mut plaintext = Vec::new();
-    let mut max_score = 0.0;
-
-    for i in 0u8..255 {
-        let xored_bytes = xor(bytes, &i);
-        let score = english_score(&xored_bytes);
-        if score > max_score {
-            plaintext = xored_bytes;
-            max_score = score;
-        }
-    }
+/// Returns the plaintext encoded using a single-byte XOR cipher. Works by selecting the XOR key
+/// that results in the most "english-like" plaintext.
+pub fn crack_single_byte_xor_cipher(ciphertext: &[u8]) -> String {
+    let plaintext = (0u8..255)
+        .map(|x| xor(ciphertext, &x))
+        .max_by(|x, y| english_score(x).total_cmp(&english_score(y)))
+        .expect("we know a value will be generated");
 
     return String::from_utf8_lossy(plaintext.as_slice()).to_string();
+}
+
+/// Returns the plaintext encoded using a single-byte XOR cipher among a list of possible
+/// ciphertexts.
+pub fn detect_single_byte_xor_cipher(possible_ciphertexts: &[&[u8]]) -> Option<String> {
+    return possible_ciphertexts
+        .iter()
+        .map(|x| crack_single_byte_xor_cipher(x))
+        .max_by(|x, y| english_score(x.as_bytes()).total_cmp(&english_score(y.as_bytes())));
 }
 
 #[cfg(test)]
@@ -31,5 +34,11 @@ mod tests {
         let ciphertext_bytes = hex::decode(ciphertext).expect("could not convert hex to bytes");
         let plaintext = crack_single_byte_xor_cipher(&ciphertext_bytes);
         assert_eq!(expected_plaintext, plaintext);
+    }
+
+    // Solution to Cryptopals set 01 challenge 03.
+    #[test]
+    fn can_detect_single_byte_xor_cipher() {
+        // TODO - Write this test.
     }
 }
