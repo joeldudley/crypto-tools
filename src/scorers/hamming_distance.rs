@@ -1,21 +1,12 @@
+use crate::converters::binary::plaintext_to_binary;
 
 /// Returns the Hamming distance between two strings.
 pub fn hamming_distance(a: &str, b: &str) -> usize {
     // todo - joel - fold into method
-    let a_binary = a
-        .as_bytes()
-        .iter()
-        .map(|x| format!("{x:08b}"))
-        .collect::<Vec<String>>()
-        .join("");
+    let a_binary = plaintext_to_binary(a);
+    let b_binary = plaintext_to_binary(b);
 
-    let b_binary = b
-        .as_bytes()
-        .iter()
-        .map(|x| format!("{x:08b}"))
-        .collect::<Vec<String>>()
-        .join("");
-
+    // The Hamming distance is the number of non-matching bits.
     a_binary.as_bytes().iter()
         .zip(b_binary.as_bytes().iter())
         .map(|(x, y)| x == y)
