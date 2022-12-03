@@ -39,6 +39,7 @@ mod tests {
     // Solution to Cryptopals set 01 challenge 04.
     #[test]
     fn can_detect_and_crack_single_byte_xor_cipher() {
+        // TODO - Add to file.
         let ciphertexts = "0e3647e8592d35514a081243582536ed3de6734059001e3f535ce6271032
 334b041de124f73c18011a50e608097ac308ecee501337ec3e100854201d
 40e127f51c10031d0133590b1e490f3514e05a54143d08222c2a4071e351
