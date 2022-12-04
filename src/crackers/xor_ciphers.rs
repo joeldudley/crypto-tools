@@ -5,14 +5,17 @@ use crate::scorers::hamming_distance::hamming_distance;
 #[derive(Debug)]
 pub struct EmptyArrayError;
 
-/// Returns the plaintext encoded using a single-byte XOR cipher. Works by selecting the XOR key
-/// that results in the most "english-like" plaintext.
-pub fn crack_single_byte_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
+/// Returns the key that was used to encrypt a ciphertext under a single-byte XOR cipher.
+pub fn find_key_single_byte_xor_cipher(ciphertext: &[u8]) -> u8 {
     (0u8..255)
-        .map(|x| xor(ciphertext, &x))
-        .max_by(|x, y| english_score(x).total_cmp(&english_score(y)))
+        .max_by(|x, y| {
+            // We XOR both potential keys against the ciphertext, and choose the one that generates
+            // the most "english-like" plaintext.
+            let xor_one = xor(ciphertext, &x);
+            let xor_two = xor(ciphertext, &y);
+            english_score(xor_one.as_slice()).total_cmp(&english_score(xor_two.as_slice()))
+        })
         .expect("we know a maximum will be found")
-        .to_vec()
 }
 
 /// Returns the plaintext encoded using a single-byte XOR cipher among a list of possible
@@ -24,7 +27,7 @@ pub fn detect_and_crack_single_byte_xor_cipher(possible_ciphertexts: &[&[u8]]) -
 
     let plaintext = possible_ciphertexts
         .iter()
-        .map(|x| crack_single_byte_xor_cipher(x))
+        .map(|x| xor(x, &find_key_single_byte_xor_cipher(x)))
         .max_by(|x, y| english_score(x).total_cmp(&english_score(y)))
         .expect("we know a maximum will be found")
         .to_vec();
@@ -76,7 +79,8 @@ mod tests {
         let expected_plaintext = "Cooking MC's like a pound of bacon".as_bytes();
 
         let ciphertext_bytes = hex::decode(ciphertext).expect("could not convert hex to bytes");
-        let plaintext = crack_single_byte_xor_cipher(&ciphertext_bytes);
+        let key = find_key_single_byte_xor_cipher(&ciphertext_bytes);
+        let plaintext = xor(&ciphertext_bytes, &key);
         assert_eq!(plaintext, expected_plaintext);
     }
 
@@ -109,8 +113,21 @@ mod tests {
             .collect::<Vec<String>>()
             .join("");
 
+        // TODO - Is there a way to only convert to bytes once?
         let keysize = find_key_size_repeating_xor_cipher(ciphertext.as_bytes());
-        println!("{}", keysize);
+        println!("jjj keysize: {}", keysize);
+
+        let chunks: Vec<&[u8]> = ciphertext.as_bytes().chunks(keysize).collect();
+
+        // for n in 0..keysize {
+        //     let y = chunks
+        //         .iter()
+        //         .map(|chunk| chunk[n])
+        //         .collect::<Vec<u8>>();
+        //
+        //     let result = crack_single_byte_xor_cipher(y.as_slice());
+        //     result
+        // }
 
         // TODO - Finish writing this test.
     }
