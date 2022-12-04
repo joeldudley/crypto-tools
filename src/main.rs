@@ -1,3 +1,5 @@
+extern crate core;
+
 mod bitflips;
 mod ciphers;
 mod converters;
