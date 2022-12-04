@@ -69,6 +69,7 @@ fn average_normalised_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader};
+    use std::str;
 
     use crate::crackers::xor_ciphers::*;
 
@@ -113,21 +114,25 @@ mod tests {
             .collect::<Vec<String>>()
             .join("");
 
+        // TODO - Missing decode-from-base64 step.
+
         // TODO - Is there a way to only convert to bytes once?
         let keysize = find_key_size_repeating_xor_cipher(ciphertext.as_bytes());
         println!("jjj keysize: {}", keysize);
 
         let chunks: Vec<&[u8]> = ciphertext.as_bytes().chunks(keysize).collect();
 
-        // for n in 0..keysize {
-        //     let y = chunks
-        //         .iter()
-        //         .map(|chunk| chunk[n])
-        //         .collect::<Vec<u8>>();
-        //
-        //     let result = crack_single_byte_xor_cipher(y.as_slice());
-        //     result
-        // }
+        for n in 0..keysize {
+            let y = chunks
+                .iter()
+                .map(|chunk| chunk[n])
+                .collect::<Vec<u8>>();
+
+            let key = find_key_single_byte_xor_cipher(y.as_slice());
+            // let plaintext = xor(y.as_slice(), &key);
+            // println!("{}", str::from_utf8(plaintext.as_slice()).expect(""));
+            println!("{}", key);
+        }
 
         // TODO - Finish writing this test.
     }
