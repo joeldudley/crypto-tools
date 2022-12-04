@@ -1,10 +1,10 @@
 extern crate core;
 
-mod bitflips;
-mod ciphers;
-mod converters;
-mod crackers;
-mod scorers;
+pub mod bitflips;
+pub mod ciphers;
+pub mod converters;
+pub mod crackers;
+pub mod scorers;
 
 fn main() {
 }
