@@ -7,7 +7,7 @@ pub fn xor(vec: &[u8], byte: &u8) -> Vec<u8> {
         .collect();
 }
 
-/// XORs two byte vectors togethr.
+/// XORs two byte vectors together.
 pub fn xor_vecs(a: &[u8], b: &[u8]) -> Vec<u8> {
     return a
         .iter()
