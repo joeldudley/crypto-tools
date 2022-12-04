@@ -9,7 +9,7 @@ pub fn hamming_distance(a: &str, b: &str) -> usize {
     a_binary.as_bytes().iter()
         .zip(b_binary.as_bytes().iter())
         .map(|(x, y)| x == y)
-        .filter(|x| *x == false)
+        .filter(|x| !(*x))
         .count()
 }
 
