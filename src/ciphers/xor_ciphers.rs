@@ -1,5 +1,5 @@
 
-// TODO - Describe.
+/// Encodes the plaintext using a repeating-key XOR cipher.
 pub fn repeating_key_xor_cipher(bytes: &[u8], key: &[u8]) -> Vec<u8> {
     bytes
         .iter()

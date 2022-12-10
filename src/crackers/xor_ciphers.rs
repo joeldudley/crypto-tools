@@ -1,4 +1,5 @@
 use crate::bitflips::xor::*;
+use crate::ciphers::xor_ciphers::repeating_key_xor_cipher;
 use crate::scorers::english_scorers::*;
 use crate::scorers::hamming_distance::hamming_distance;
 
@@ -13,6 +14,24 @@ pub struct EmptyArrayError;
 pub fn crack_single_byte_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
     let key = find_key_single_byte_xor_cipher(ciphertext);
     xor(ciphertext, &key)
+}
+
+/// Cracks a repeating-key XOR cipher.
+pub fn crack_repeating_key_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
+    let keysize = find_key_size_repeating_xor_cipher(&ciphertext);
+    let ciphertext_chunks: Vec<&[u8]> = ciphertext.chunks_exact(keysize).collect();
+    let key: Vec<u8> = (0..keysize)
+        .map(|i| {
+            let chunks_ith_entries = ciphertext_chunks
+                .iter()
+                .map(|chunk| chunk[i])
+                .collect::<Vec<u8>>();
+
+            find_key_single_byte_xor_cipher(&chunks_ith_entries)
+        })
+        .collect();
+
+    repeating_key_xor_cipher(&ciphertext, &key)
 }
 
 /// Returns the plaintext encoded using a single-byte XOR cipher among a list of possible
@@ -73,7 +92,6 @@ fn average_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
-    use crate::ciphers::xor_ciphers::repeating_key_xor_cipher;
 
     use crate::crackers::xor_ciphers::*;
 
@@ -109,7 +127,6 @@ mod tests {
     // Solution to Cryptopals set 01 challenge 06.
     #[test]
     fn can_detect_and_crack_repeating_key_xor_cipher() {
-        // todo - joel - clean up the empty expects
         let ciphertext_file = File::open("./src/crackers/6.txt").expect("could not open file");
         let ciphertext = BufReader::new(ciphertext_file)
             .lines()
@@ -121,22 +138,7 @@ mod tests {
         BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).expect("could not read file");
 
         let ciphertext_bytes = base64::decode(ciphertext).expect("could not convert Base64 to bytes");
-
-        // TODO - Move into function.
-        let keysize = find_key_size_repeating_xor_cipher(&ciphertext_bytes);
-        let chunks: Vec<&[u8]> = ciphertext_bytes.chunks_exact(keysize).collect();
-        let key: Vec<u8> = (0..keysize)
-            .map(|i| {
-                let ith_chunk_entries = chunks
-                    .iter()
-                    .map(|chunk| chunk[i])
-                    .collect::<Vec<u8>>();
-
-                find_key_single_byte_xor_cipher(&ith_chunk_entries)
-            })
-            .collect();
-
-        let plaintext = repeating_key_xor_cipher(&ciphertext_bytes, &key);
+        let plaintext = crack_repeating_key_xor_cipher(&ciphertext_bytes);
         assert_eq!(plaintext, expected_plaintext);
     }
 }
