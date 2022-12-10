@@ -1,5 +1,6 @@
 
-fn repeating_key_xor_cipher(bytes: &[u8], key: &[u8]) -> Vec<u8> {
+// TODO - Describe.
+pub fn repeating_key_xor_cipher(bytes: &[u8], key: &[u8]) -> Vec<u8> {
     bytes
         .iter()
         .enumerate()
