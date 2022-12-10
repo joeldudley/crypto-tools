@@ -2,6 +2,9 @@ use crate::bitflips::xor::*;
 use crate::scorers::english_scorers::*;
 use crate::scorers::hamming_distance::hamming_distance;
 
+const MIN_KEYSIZE: usize = 2; // The smallest keysize checked for in cracking an XOR cipher.
+const MAX_KEYSIZE: usize = 40; // The largest keysize checked for in cracking an XOR cipher.
+
 #[derive(Debug)]
 pub struct EmptyArrayError;
 
@@ -37,15 +40,15 @@ pub fn detect_and_crack_single_byte_xor_cipher(possible_ciphertexts: &[&[u8]]) -
 
 /// Finds the key size (of between 2 and 40 bytes) used to encrypt a repeating XOR cipher.
 pub fn find_key_size_repeating_xor_cipher(ciphertext: &[u8]) -> usize {
-    let candidate_keysizes = 2..41;
+    let candidate_keysizes = MIN_KEYSIZE..MAX_KEYSIZE+1;
     candidate_keysizes
-        .min_by(|x, y| average_normalised_hamming_distance(ciphertext, x)
-            .total_cmp(&average_normalised_hamming_distance(ciphertext, y)))
+        .min_by(|x, y| average_hamming_distance(ciphertext, x)
+            .total_cmp(&average_hamming_distance(ciphertext, y)))
         .expect("we know a minimum will be found")
 }
 
 /// Returns the average, normalised Hamming distance between four blocks of the provided text.
-fn average_normalised_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
+fn average_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
     // TODO - See if I can use itertools to do this more elegantly.
     let block_one = &text[0..*block_size];
     let block_two = &text[*block_size..*block_size * 2];
@@ -69,7 +72,6 @@ fn average_normalised_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader};
-    use std::str;
 
     use crate::crackers::xor_ciphers::*;
 
@@ -106,21 +108,21 @@ mod tests {
     // Solution to Cryptopals set 01 challenge 06.
     #[test]
     fn can_detect_and_crack_repeating_key_xor_cipher() {
+        // todo - joel - clean up the empty expects
         let filename = "./src/crackers/6.txt";
         let file = File::open(filename).expect("could not open file");
-        let ciphertext = BufReader::new(file)
+        let ciphertext_base64 = BufReader::new(file)
             .lines()
             .map(|x| x.expect(""))
             .collect::<Vec<String>>()
             .join("");
 
-        // TODO - Missing decode-from-base64 step.
+        let ciphertext = base64::decode(ciphertext_base64).expect("");
 
-        // TODO - Is there a way to only convert to bytes once?
-        let keysize = find_key_size_repeating_xor_cipher(ciphertext.as_bytes());
+        let keysize = find_key_size_repeating_xor_cipher(&ciphertext);
         println!("jjj keysize: {}", keysize);
 
-        let chunks: Vec<&[u8]> = ciphertext.as_bytes().chunks(keysize).collect();
+        let chunks: Vec<&[u8]> = ciphertext.chunks_exact(keysize).collect();
 
         for n in 0..keysize {
             let y = chunks
