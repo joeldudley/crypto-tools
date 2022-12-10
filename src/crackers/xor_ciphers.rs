@@ -18,7 +18,7 @@ pub fn crack_single_byte_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
 
 /// Cracks a repeating-key XOR cipher.
 pub fn crack_repeating_key_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
-    let keysize = find_key_size_repeating_xor_cipher(&ciphertext);
+    let keysize = find_key_size_repeating_xor_cipher(ciphertext);
     let ciphertext_chunks: Vec<&[u8]> = ciphertext.chunks_exact(keysize).collect();
     let key: Vec<u8> = (0..keysize)
         .map(|i| {
@@ -31,7 +31,7 @@ pub fn crack_repeating_key_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
         })
         .collect();
 
-    repeating_key_xor_cipher(&ciphertext, &key)
+    repeating_key_xor_cipher(ciphertext, &key)
 }
 
 /// Returns the plaintext encoded using a single-byte XOR cipher among a list of possible
@@ -57,8 +57,8 @@ fn find_key_single_byte_xor_cipher(ciphertext: &[u8]) -> u8 {
         .max_by(|x, y| {
             // We XOR both potential keys against the ciphertext, and choose the one that generates
             // the most "english-like" plaintext.
-            let xor_one = xor(ciphertext, &x);
-            let xor_two = xor(ciphertext, &y);
+            let xor_one = xor(ciphertext, x);
+            let xor_two = xor(ciphertext, y);
             english_score(xor_one.as_slice()).total_cmp(&english_score(xor_two.as_slice()))
         })
         .expect("we know a maximum will be found")
