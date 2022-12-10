@@ -2,8 +2,9 @@ use crate::bitflips::xor::*;
 use crate::scorers::english_scorers::*;
 use crate::scorers::hamming_distance::hamming_distance;
 
-const MIN_KEYSIZE: usize = 2; // The smallest keysize checked for in cracking an XOR cipher.
-const MAX_KEYSIZE: usize = 40; // The largest keysize checked for in cracking an XOR cipher.
+const MIN_KEYSIZE: usize = 2; // The smallest keysize checked for to crack an XOR cipher.
+const MAX_KEYSIZE: usize = 40; // The largest keysize checked for to crack an XOR cipher.
+const NUM_BLOCKS_AVG_DIST: usize = 10; // The number of blocks to calculate the average Hamming distance.
 
 #[derive(Debug)]
 pub struct EmptyArrayError;
@@ -47,31 +48,26 @@ pub fn find_key_size_repeating_xor_cipher(ciphertext: &[u8]) -> usize {
         .expect("we know a minimum will be found")
 }
 
-/// Returns the average, normalised Hamming distance between four blocks of the provided text.
+/// Returns the average Hamming distance across consecutive blocks of the provided text.
 fn average_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
-    // TODO - See if I can use itertools to do this more elegantly.
-    let block_one = &text[0..*block_size];
-    let block_two = &text[*block_size..*block_size * 2];
-    let block_three = &text[block_size * 2..block_size * 3];
-    let block_four = &text[block_size * 3..block_size * 4];
-
-    let total_hamming_distance = hamming_distance(block_one, block_two)
-        + hamming_distance(block_one, block_three)
-        + hamming_distance(block_one, block_four)
-        + hamming_distance(block_two, block_three)
-        + hamming_distance(block_three, block_four);
-
-    let number_of_comparisons = 5;
+    let total_hamming_distance: usize = (0..NUM_BLOCKS_AVG_DIST)
+        .map(|i| {
+            let first_block = &text[block_size * i..block_size * (i+1)];
+            let second_block = &text[block_size * (i+1)..block_size * (i+2)];
+            hamming_distance(first_block, second_block)
+        })
+        .sum();
 
     // The result is normalised (by dividing by the block size) and averaged (by dividing by the
     // number of comparisons performed).
-    (total_hamming_distance as f64) / (number_of_comparisons as f64 * *block_size as f64)
+    (total_hamming_distance as f64) / (NUM_BLOCKS_AVG_DIST as f64 * *block_size as f64)
 }
 
 #[cfg(test)]
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader};
+    use std::str::from_utf8;
 
     use crate::crackers::xor_ciphers::*;
 
@@ -82,6 +78,7 @@ mod tests {
         let expected_plaintext = "Cooking MC's like a pound of bacon".as_bytes();
 
         let ciphertext_bytes = hex::decode(ciphertext).expect("could not convert hex to bytes");
+        // TODO - There should be a function called `crack_single_byte_xor_cipher`.
         let key = find_key_single_byte_xor_cipher(&ciphertext_bytes);
         let plaintext = xor(&ciphertext_bytes, &key);
         assert_eq!(plaintext, expected_plaintext);
@@ -120,21 +117,21 @@ mod tests {
         let ciphertext = base64::decode(ciphertext_base64).expect("");
 
         let keysize = find_key_size_repeating_xor_cipher(&ciphertext);
-        println!("jjj keysize: {}", keysize);
 
         let chunks: Vec<&[u8]> = ciphertext.chunks_exact(keysize).collect();
 
-        for n in 0..keysize {
-            let y = chunks
-                .iter()
-                .map(|chunk| chunk[n])
-                .collect::<Vec<u8>>();
+        let key: Vec<u8> = (0..keysize)
+            .map(|i| {
+                let ith_chunk_entries = chunks
+                    .iter()
+                    .map(|chunk| chunk[i])
+                    .collect::<Vec<u8>>();
 
-            let key = find_key_single_byte_xor_cipher(y.as_slice());
-            // let plaintext = xor(y.as_slice(), &key);
-            // println!("{}", str::from_utf8(plaintext.as_slice()).expect(""));
-            println!("{}", key);
-        }
+                find_key_single_byte_xor_cipher(&ith_chunk_entries)
+            })
+            .collect();
+
+        println!("{}", from_utf8(&key).expect(""))
 
         // TODO - Finish writing this test.
     }
