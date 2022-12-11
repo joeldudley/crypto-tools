@@ -109,8 +109,7 @@ mod tests {
     // Solution to Cryptopals set 01 challenge 04.
     #[test]
     fn can_detect_and_crack_single_byte_xor_cipher() {
-        let filename = "./src/crackers/4.txt";
-        let file = File::open(filename).expect("could not open file");
+        let file = File::open("./data/4.txt").expect("could not open file");
         let ciphertexts = BufReader::new(file)
             .lines()
             .map(|x| hex::decode(x.expect("could not read line"))
@@ -127,13 +126,13 @@ mod tests {
     // Solution to Cryptopals set 01 challenge 06.
     #[test]
     fn can_detect_and_crack_repeating_key_xor_cipher() {
-        let ciphertext_file = File::open("./src/crackers/6.txt").expect("could not open file");
+        let ciphertext_file = File::open( "./data/6.txt").expect("could not open file");
         let ciphertext = BufReader::new(ciphertext_file)
             .lines()
             .map(|line| line.expect("could not read line"))
             .collect::<Vec<String>>()
             .join("");
-        let plaintext_file = File::open("./src/crackers/6_plaintext.txt").expect("could not open file");
+        let plaintext_file = File::open("./data/6_plaintext.txt").expect("could not open file");
         let mut expected_plaintext = Vec::new();
         BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).expect("could not read file");
 
