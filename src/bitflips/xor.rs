@@ -27,10 +27,10 @@ mod tests {
         let hex_b = "686974207468652062756c6c277320657965";
         let expected_xor_hex = "746865206b696420646f6e277420706c6179";
 
-        let bytes_a = hex::decode(hex_a).expect("could not convert hex to bytes");
-        let bytes_b = hex::decode(hex_b).expect("could not convert hex to bytes");
+        let bytes_a = hex::decode(hex_a).expect("could not decode hex to bytes");
+        let bytes_b = hex::decode(hex_b).expect("could not decode hex to bytes");
         let xor_bytes = xor_vecs(&bytes_a, &bytes_b);
-        let expected_xor_bytes = hex::decode(expected_xor_hex).expect("could not convert hex to bytes");
+        let expected_xor_bytes = hex::decode(expected_xor_hex).expect("could not decode hex to bytes");
         assert_eq!(xor_bytes, expected_xor_bytes)
     }
 }

@@ -98,11 +98,11 @@ mod tests {
     // Solution to Cryptopals set 01 challenge 03.
     #[test]
     fn can_crack_single_byte_xor_cipher() {
-        let ciphertext = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-        let expected_plaintext = "Cooking MC's like a pound of bacon".as_bytes();
+        let ciphertext_hex = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
+        let expected_plaintext = b"Cooking MC's like a pound of bacon";
 
-        let ciphertext_bytes = hex::decode(ciphertext).expect("could not convert hex to bytes");
-        let plaintext = crack_single_byte_xor_cipher(&ciphertext_bytes);
+        let ciphertext = hex::decode(ciphertext_hex).expect("could not decode hex to bytes");
+        let plaintext = crack_single_byte_xor_cipher(&ciphertext);
         assert_eq!(plaintext, expected_plaintext);
     }
 
@@ -113,9 +113,9 @@ mod tests {
         let ciphertexts = BufReader::new(file)
             .lines()
             .map(|x| hex::decode(x.expect("could not read line"))
-                .expect("could not convert hex to bytes"))
+                .expect("could not decode hex to bytes"))
             .collect::<Vec<Vec<u8>>>();
-        let expected_plaintext = "Now that the party is jumping\n".as_bytes();
+        let expected_plaintext = b"Now that the party is jumping\n";
 
         let ciphertexts_bytes = ciphertexts.iter().map(|x| &x[..]).collect::<Vec<&[u8]>>();
         let plaintext = detect_and_crack_single_byte_xor_cipher(&ciphertexts_bytes)
@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn can_detect_and_crack_repeating_key_xor_cipher() {
         let ciphertext_file = File::open( "./data/6.txt").expect("could not open file");
-        let ciphertext = BufReader::new(ciphertext_file)
+        let ciphertext_base64 = BufReader::new(ciphertext_file)
             .lines()
             .map(|line| line.expect("could not read line"))
             .collect::<Vec<String>>()
@@ -136,8 +136,8 @@ mod tests {
         let mut expected_plaintext = Vec::new();
         BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).expect("could not read file");
 
-        let ciphertext_bytes = base64::decode(ciphertext).expect("could not convert Base64 to bytes");
-        let plaintext = crack_repeating_key_xor_cipher(&ciphertext_bytes);
+        let ciphertext = base64::decode(ciphertext_base64).expect("could not decode Base64 to bytes");
+        let plaintext = crack_repeating_key_xor_cipher(&ciphertext);
         assert_eq!(plaintext, expected_plaintext);
     }
 }
