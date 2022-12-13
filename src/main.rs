@@ -5,6 +5,7 @@ pub mod ciphers;
 pub mod converters;
 pub mod crackers;
 pub mod scorers;
+pub mod test_utils;
 
 fn main() {
 }

@@ -94,6 +94,7 @@ mod tests {
     use std::io::{BufRead, BufReader, Read};
 
     use crate::crackers::xor_ciphers::*;
+    use crate::test_utils::io::read_hex_lines;
 
     // Solution to Cryptopals set 01 challenge 03.
     #[test]
@@ -109,12 +110,7 @@ mod tests {
     // Solution to Cryptopals set 01 challenge 04.
     #[test]
     fn can_detect_and_crack_single_byte_xor_cipher() {
-        let file = File::open("./data/4.txt").expect("could not open file");
-        let ciphertexts = BufReader::new(file)
-            .lines()
-            .map(|x| hex::decode(x.expect("could not read line"))
-                .expect("could not decode hex to bytes"))
-            .collect::<Vec<Vec<u8>>>();
+        let ciphertexts = read_hex_lines("./data/4.txt");
         let expected_plaintext = b"Now that the party is jumping\n";
 
         let ciphertexts_bytes = ciphertexts.iter().map(|x| &x[..]).collect::<Vec<&[u8]>>();
