@@ -10,9 +10,6 @@ pub fn repeating_key_xor_cipher(bytes: &[u8], key: &[u8]) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-    use std::io::{BufRead, BufReader, Read};
-    use openssl::symm::{Cipher, decrypt};
     use crate::ciphers::xor_ciphers::repeating_key_xor_cipher;
 
     // Solution to Cryptopals set 01 challenge 05.
