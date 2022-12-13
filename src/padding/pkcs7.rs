@@ -1,15 +1,30 @@
 
+/// Pads the input using PKCS#7 padding.
+pub fn pad_pkcs7(input: &[u8], padded_len: usize) -> Vec<u8> {
+    let padding_len = padded_len - input.len();
+    let padding_byte = u8::try_from(padding_len)
+        // TODO - Revisit this potential panic.
+        .expect("could not convert padding length to u8");
+    let padding = vec![padding_byte; padding_len];
+    
+    let mut output = input.to_vec();
+    output.extend(padding);
+    output
+}
+
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-    use std::io::{BufRead, BufReader, Read};
-
-    use crate::crackers::xor_ciphers::*;
-    use crate::test_utils::io::read_hex_lines;
+    use crate::padding::pkcs7::pad_pkcs7;
 
     // Solution to Cryptopals set 02 challenge 09.
     #[test]
     fn can_add_pksc7_padding() {
-        // TODO - Implement padding.
+        let unpadded_value = "YELLOW_SUBMARINE".as_bytes();
+        let padded_len = 20;
+        let mut expected_padded_value = unpadded_value.to_vec();
+        expected_padded_value.extend(vec![4, 4, 4, 4]);
+        
+        let padded_value = pad_pkcs7(unpadded_value, padded_len);
+        assert_eq!(padded_value, expected_padded_value);
     }
 }
