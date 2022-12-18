@@ -22,7 +22,7 @@ mod tests {
         let unpadded_value = "YELLOW_SUBMARINE".as_bytes();
         let padded_len = 20;
         let mut expected_padded_value = unpadded_value.to_vec();
-        expected_padded_value.extend(vec![4, 4, 4, 4]);
+        expected_padded_value.extend(b"\x04\x04\x04\x04");
         
         let padded_value = pad_pkcs7(unpadded_value, padded_len);
         assert_eq!(padded_value, expected_padded_value);
