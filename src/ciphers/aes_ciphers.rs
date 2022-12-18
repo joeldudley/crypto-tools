@@ -1,7 +1,6 @@
 use std::collections::HashSet;
-use std::str::from_utf8;
 
-use openssl::symm::{Cipher, Crypter, decrypt};
+use openssl::symm::{Cipher, Crypter};
 use openssl::symm::Mode::Decrypt;
 
 use crate::bitflips::xor::xor_vecs;
@@ -24,6 +23,7 @@ pub fn is_aes_ecb_mode(ciphertext: &[u8]) -> bool {
 }
 
 /// todo - joel - describe
+// TODO - Also implement encryption.
 pub fn decrypt_cbc_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
     let data_len = ciphertext.len();
     // todo - joel - use entire ciphertext
@@ -44,8 +44,7 @@ pub fn decrypt_cbc_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
     plaintext.truncate(count);
 
     // todo - joel - only xor against iv for first chunk
-    let xored_chunk = xor_vecs(&plaintext, iv);
-    return xored_chunk;
+    xor_vecs(&plaintext, iv)
 }
 
 #[cfg(test)]
@@ -54,8 +53,8 @@ mod tests {
     use std::io::{BufRead, BufReader, Read};
     use std::str::from_utf8;
 
-    use openssl::symm::{Cipher, Crypter, decrypt, encrypt, Mode};
-    use openssl::symm::Mode::Decrypt;
+    use openssl::symm::Cipher;
+    use openssl::symm::decrypt;
 
     use crate::ciphers::aes_ciphers::{decrypt_cbc_mode, is_aes_ecb_mode};
     use crate::test_utils::io::read_hex_lines;
@@ -63,20 +62,20 @@ mod tests {
     // Solution to Cryptopals set 1 challenge 07.
     #[test]
     fn can_decrypt_ecb_mode() {
-        let ciphertext_file = File::open("./data/7.txt").expect("could not open file");
+        let ciphertext_file = File::open("./data/7.txt").unwrap();
         let ciphertext_base64 = BufReader::new(ciphertext_file)
             .lines()
-            .map(|line| line.expect("could not read line"))
+            .map(|line| line.unwrap())
             .collect::<Vec<String>>()
             .join("");
-        let plaintext_file = File::open("./data/7_plaintext.txt").expect("could not open file");
+        let plaintext_file = File::open("./data/7_plaintext.txt").unwrap();
         let mut expected_plaintext = Vec::new();
-        BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).expect("could not read file");
+        BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).unwrap();
 
-        let ciphertext = base64::decode(ciphertext_base64).expect("could not decode Base64 to bytes");
+        let ciphertext = base64::decode(ciphertext_base64).unwrap();
         let cipher = Cipher::aes_128_ecb();
         let key = b"YELLOW SUBMARINE";
-        let plaintext = decrypt(cipher, key, None, &ciphertext).expect("could not decrypt ciphertext");
+        let plaintext = decrypt(cipher, key, None, &ciphertext).unwrap();
         assert_eq!(plaintext, expected_plaintext);
     }
 
@@ -89,7 +88,7 @@ mod tests {
         let ecb_ciphertext = ciphertexts
             .iter()
             .find(|ciphertext| is_aes_ecb_mode(ciphertext))
-            .expect("could not find ciphertext from AES in ECB mode");
+            .unwrap();
         let ecb_ciphertext_hex = hex::encode(ecb_ciphertext);
         assert_eq!(ecb_ciphertext_hex, expected_ecb_ciphertext);
     }
@@ -97,10 +96,10 @@ mod tests {
     // Solution to Cryptopals set 2 challenge 10.
     #[test]
     fn can_decrypt_cbc_mode() {
-        let ciphertext_file = File::open("./data/10.txt").expect("could not open file");
+        let ciphertext_file = File::open("./data/10.txt").unwrap();
         let ciphertext_base64 = BufReader::new(ciphertext_file)
             .lines()
-            .map(|line| line.expect("could not read line"))
+            .map(|line| line.unwrap())
             .collect::<Vec<String>>()
             .join("");
         let iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";

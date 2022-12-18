@@ -102,7 +102,7 @@ mod tests {
         let ciphertext_hex = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
         let expected_plaintext = b"Cooking MC's like a pound of bacon";
 
-        let ciphertext = hex::decode(ciphertext_hex).expect("could not decode hex to bytes");
+        let ciphertext = hex::decode(ciphertext_hex).unwrap();
         let plaintext = crack_single_byte_xor_cipher(&ciphertext);
         assert_eq!(plaintext, expected_plaintext);
     }
@@ -114,25 +114,24 @@ mod tests {
         let expected_plaintext = b"Now that the party is jumping\n";
 
         let ciphertexts_bytes = ciphertexts.iter().map(|x| &x[..]).collect::<Vec<&[u8]>>();
-        let plaintext = detect_and_crack_single_byte_xor_cipher(&ciphertexts_bytes)
-            .expect("could not find plaintext");
+        let plaintext = detect_and_crack_single_byte_xor_cipher(&ciphertexts_bytes).unwrap();
         assert_eq!(plaintext, expected_plaintext);
     }
 
     // Solution to Cryptopals set 01 challenge 06.
     #[test]
     fn can_detect_and_crack_repeating_key_xor_cipher() {
-        let ciphertext_file = File::open( "./data/6.txt").expect("could not open file");
+        let ciphertext_file = File::open( "./data/6.txt").unwrap();
         let ciphertext_base64 = BufReader::new(ciphertext_file)
             .lines()
-            .map(|line| line.expect("could not read line"))
+            .map(|line| line.unwrap())
             .collect::<Vec<String>>()
             .join("");
-        let plaintext_file = File::open("./data/6_plaintext.txt").expect("could not open file");
+        let plaintext_file = File::open("./data/6_plaintext.txt").unwrap();
         let mut expected_plaintext = Vec::new();
-        BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).expect("could not read file");
+        BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).unwrap();
 
-        let ciphertext = base64::decode(ciphertext_base64).expect("could not decode Base64 to bytes");
+        let ciphertext = base64::decode(ciphertext_base64).unwrap();
         let plaintext = crack_repeating_key_xor_cipher(&ciphertext);
         assert_eq!(plaintext, expected_plaintext);
     }
