@@ -7,15 +7,13 @@ use crate::bitflips::xor::xor_vecs;
 
 pub fn is_encrypted_using_aes_ecb_mode(ciphertext: &[u8]) -> bool {
     let chunks = ciphertext.chunks(16);
-    let mut chunks_seen = HashSet::new();
+    let mut chunks_seen_before = HashSet::new();
 
-    // We use a `for` loop so that we can return early.
     for chunk in chunks {
-        if chunks_seen.contains(chunk) {
-            // We've seen this ciphertext before.
+        if chunks_seen_before.contains(chunk) {
             return true;
         }
-        chunks_seen.insert(chunk);
+        chunks_seen_before.insert(chunk);
     }
     false
 }
