@@ -1,6 +1,5 @@
 use crate::converters::binary::plaintext_to_binary;
 
-/// Returns the Hamming distance between two strings.
 pub fn hamming_distance(a: &[u8], b: &[u8]) -> usize {
     let a_binary = plaintext_to_binary(a);
     let b_binary = plaintext_to_binary(b);

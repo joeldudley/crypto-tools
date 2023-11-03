@@ -5,8 +5,6 @@ use openssl::symm::Mode::Decrypt;
 
 use crate::bitflips::xor::xor_vecs;
 
-/// Indicates whether a ciphertext is likely encrypted with AES in ECB mode, by looking for 
-/// repeating 16-byte ciphertext blocks.
 pub fn is_aes_ecb_mode(ciphertext: &[u8]) -> bool {
     let chunks = ciphertext.chunks(16);
     let mut chunks_seen = HashSet::new();
@@ -22,36 +20,41 @@ pub fn is_aes_ecb_mode(ciphertext: &[u8]) -> bool {
     false
 }
 
-/// todo - joel - describe
-// TODO - Also implement encryption.
 pub fn decrypt_cbc_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
-    let data_len = ciphertext.len();
-    // todo - joel - use entire ciphertext
-    let ciphertext = &ciphertext[..16];
-
-    // Create a cipher context for decryption.
+    let block_size = Cipher::aes_128_ecb().block_size();
     let mut decrypter = Crypter::new(
         Cipher::aes_128_ecb(),
         Decrypt,
         key,
         Some(iv)).unwrap();
     decrypter.pad(false);
-    let block_size = Cipher::aes_128_ecb().block_size();
-    let mut plaintext = vec![0; data_len + block_size];
 
-    let mut count = decrypter.update(ciphertext, &mut plaintext).unwrap();
-    count += decrypter.finalize(&mut plaintext[count..]).unwrap();
-    plaintext.truncate(count);
+    let mut cbc_ciphertext = vec![0; ciphertext.len() + block_size];
+    let count = decrypter.update(&ciphertext, &mut cbc_ciphertext).unwrap();
+    decrypter.finalize(&mut cbc_ciphertext[count..]).unwrap();
 
-    // todo - joel - only xor against iv for first chunk
-    xor_vecs(&plaintext, iv)
+    let mut plaintext = Vec::new();
+    let mut pos = 0;
+
+    while pos * 16 < ciphertext.len() {
+        let previous_block;
+        if pos == 0 {
+            previous_block = iv;
+        } else {
+            previous_block = &ciphertext[(pos - 1) * block_size..pos * block_size];
+        }
+        let plaintext_block = xor_vecs(&cbc_ciphertext[pos * block_size..(pos + 1) * block_size], &previous_block);
+        plaintext.push(plaintext_block);
+        pos += 1
+    }
+
+    plaintext.concat()
 }
 
 #[cfg(test)]
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
-    use std::str::from_utf8;
 
     use openssl::symm::Cipher;
     use openssl::symm::decrypt;
@@ -59,7 +62,7 @@ mod tests {
     use crate::ciphers::aes_ciphers::{decrypt_cbc_mode, is_aes_ecb_mode};
     use crate::test_utils::io::read_hex_lines;
 
-    // Solution to Cryptopals set 1 challenge 07.
+    // Solution to Cryptopals set 01 challenge 07.
     #[test]
     fn can_decrypt_ecb_mode() {
         let ciphertext_file = File::open("./data/7.txt").unwrap();
@@ -68,6 +71,7 @@ mod tests {
             .map(|line| line.unwrap())
             .collect::<Vec<String>>()
             .join("");
+
         let plaintext_file = File::open("./data/7_plaintext.txt").unwrap();
         let mut expected_plaintext = Vec::new();
         BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).unwrap();
@@ -93,7 +97,7 @@ mod tests {
         assert_eq!(ecb_ciphertext_hex, expected_ecb_ciphertext);
     }
 
-    // Solution to Cryptopals set 2 challenge 10.
+    // Solution to Cryptopals set 02 challenge 10.
     #[test]
     fn can_decrypt_cbc_mode() {
         let ciphertext_file = File::open("./data/10.txt").unwrap();
@@ -104,10 +108,13 @@ mod tests {
             .join("");
         let iv = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
         let key = b"YELLOW SUBMARINE";
-
         let ciphertext = base64::decode(ciphertext_base64).unwrap();
-        let plaintext = decrypt_cbc_mode(&ciphertext, iv, key);
 
-        println!("{}", from_utf8(&plaintext).unwrap())
+        let plaintext_file = File::open("./data/7_plaintext.txt").unwrap();
+        let mut expected_plaintext = Vec::new();
+        BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).unwrap();
+
+        let plaintext = decrypt_cbc_mode(&ciphertext, iv, key);
+        assert_eq!(plaintext[0..plaintext.len()-4], expected_plaintext);
     }
 }

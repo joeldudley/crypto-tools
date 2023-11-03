@@ -4,7 +4,6 @@ extern crate hex;
 #[derive(Debug)]
 pub struct ConversionError;
 
-/// Converts a hex string to a Base64 string.
 pub fn hex_to_base_64(hex: &str) -> Result<String, ConversionError> {
     let bytes_result = hex::decode(hex);
     match bytes_result {

@@ -10,13 +10,11 @@ const NUM_BLOCKS_AVG_DIST: usize = 10; // The number of blocks to calculate the 
 #[derive(Debug)]
 pub struct EmptyArrayError;
 
-/// Cracks a single-byte XOR cipher.
 pub fn crack_single_byte_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
     let key = find_key_single_byte_xor_cipher(ciphertext);
     xor(ciphertext, &key)
 }
 
-/// Cracks a repeating-key XOR cipher.
 pub fn crack_repeating_key_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
     let keysize = find_key_size_repeating_xor_cipher(ciphertext);
     let ciphertext_chunks: Vec<&[u8]> = ciphertext.chunks_exact(keysize).collect();
@@ -34,8 +32,6 @@ pub fn crack_repeating_key_xor_cipher(ciphertext: &[u8]) -> Vec<u8> {
     repeating_key_xor_cipher(ciphertext, &key)
 }
 
-/// Returns the plaintext encoded using a single-byte XOR cipher among a list of possible
-/// ciphertexts.
 pub fn detect_and_crack_single_byte_xor_cipher(possible_ciphertexts: &[&[u8]]) -> Result<Vec<u8>, EmptyArrayError> {
     if possible_ciphertexts.is_empty() {
         return Err(EmptyArrayError);
@@ -51,7 +47,6 @@ pub fn detect_and_crack_single_byte_xor_cipher(possible_ciphertexts: &[&[u8]]) -
     Ok(plaintext)
 }
 
-/// Returns the key that was used to encrypt a ciphertext under a single-byte XOR cipher.
 fn find_key_single_byte_xor_cipher(ciphertext: &[u8]) -> u8 {
     (0u8..255)
         .max_by(|x, y| {
@@ -64,7 +59,6 @@ fn find_key_single_byte_xor_cipher(ciphertext: &[u8]) -> u8 {
         .expect("we know a maximum will be found")
 }
 
-/// Finds the key size (of between 2 and 40 bytes) used to encrypt a repeating XOR cipher.
 fn find_key_size_repeating_xor_cipher(ciphertext: &[u8]) -> usize {
     let candidate_keysizes = MIN_KEYSIZE..MAX_KEYSIZE+1;
     candidate_keysizes
@@ -73,7 +67,6 @@ fn find_key_size_repeating_xor_cipher(ciphertext: &[u8]) -> usize {
         .expect("we know a minimum will be found")
 }
 
-/// Returns the average Hamming distance across consecutive blocks of the provided text.
 fn average_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
     let total_hamming_distance: usize = (0..NUM_BLOCKS_AVG_DIST)
         .map(|i| {

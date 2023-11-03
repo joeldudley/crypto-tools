@@ -1,5 +1,4 @@
 
-/// Pads the input using PKCS#7 padding.
 pub fn pad_pkcs7(input: &[u8], padded_len: usize) -> Vec<u8> {
     let padding_len = padded_len - input.len();
     let padding_byte = u8::try_from(padding_len)

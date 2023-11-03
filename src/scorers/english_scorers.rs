@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-/// Returns a score. The higher the score, the more likely the text is English.
 pub fn english_score(bytes: &[u8]) -> f32 {
     // The frequency of each character in a sample of English-language texts, including spaces.
     let letter_frequency: HashMap<&char, f32> = [
