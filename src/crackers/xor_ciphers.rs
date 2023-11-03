@@ -85,6 +85,8 @@ fn average_hamming_distance(text: &[u8], block_size: &usize) -> f64 {
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
+    use base64::Engine;
+    use base64::engine::general_purpose;
 
     use crate::crackers::xor_ciphers::*;
     use crate::test_utils::io::read_hex_lines;
@@ -124,7 +126,7 @@ mod tests {
         let mut expected_plaintext = Vec::new();
         BufReader::new(plaintext_file).read_to_end(&mut expected_plaintext).unwrap();
 
-        let ciphertext = base64::decode(ciphertext_base64).unwrap();
+        let ciphertext = general_purpose::STANDARD.decode(&ciphertext_base64).unwrap();
         let plaintext = crack_repeating_key_xor_cipher(&ciphertext);
         assert_eq!(plaintext, expected_plaintext);
     }

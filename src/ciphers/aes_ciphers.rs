@@ -62,6 +62,8 @@ pub fn decrypt_cbc_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
+    use base64::Engine;
+    use base64::engine::general_purpose;
 
     use crate::ciphers::aes_ciphers::{decrypt_cbc_mode, decrypt_ecb_mode, is_aes_ecb_mode};
     use crate::test_utils::io::read_hex_lines;
@@ -75,7 +77,7 @@ mod tests {
             .map(|line| line.unwrap())
             .collect::<Vec<String>>()
             .join("");
-        let ciphertext = base64::decode(ciphertext_base64).unwrap();
+        let ciphertext = general_purpose::STANDARD.decode(&ciphertext_base64).unwrap();
 
         let plaintext_file = File::open("./data/7_plaintext.txt").unwrap();
         let mut expected_plaintext = Vec::new();
@@ -108,7 +110,7 @@ mod tests {
             .map(|line| line.unwrap())
             .collect::<Vec<String>>()
             .join("");
-        let ciphertext = base64::decode(ciphertext_base64).unwrap();
+        let ciphertext = general_purpose::STANDARD.decode(ciphertext_base64).unwrap();
 
         let plaintext_file = File::open("./data/7_plaintext.txt").unwrap();
         let mut expected_plaintext = Vec::new();

@@ -1,13 +1,16 @@
 extern crate base64;
 extern crate hex;
 
+use base64::Engine;
+use base64::engine::general_purpose;
+
 #[derive(Debug)]
 pub struct ConversionError;
 
 pub fn hex_to_base_64(hex: &str) -> Result<String, ConversionError> {
     let bytes_result = hex::decode(hex);
     match bytes_result {
-        Ok(bytes) => Ok(base64::encode(bytes)),
+        Ok(bytes) => Ok(general_purpose::STANDARD.encode(bytes)),
         Err(_) => Err(ConversionError),
     }
 }
