@@ -5,7 +5,7 @@ use openssl::symm::Mode::Decrypt;
 
 use crate::bitflips::xor::xor_vecs;
 
-pub fn is_aes_ecb_mode(ciphertext: &[u8]) -> bool {
+pub fn is_encoded_using_aes_ecb_mode(ciphertext: &[u8]) -> bool {
     let chunks = ciphertext.chunks(16);
     let mut chunks_seen = HashSet::new();
 
@@ -64,7 +64,7 @@ mod tests {
     use base64::Engine;
     use base64::engine::general_purpose;
 
-    use crate::ciphers::aes_ciphers::{decrypt_cbc_mode, decrypt_ecb_mode, is_aes_ecb_mode};
+    use crate::ciphers::aes_ciphers::{decrypt_cbc_mode, decrypt_ecb_mode, is_encoded_using_aes_ecb_mode};
     use crate::test_utils::io::read_hex_lines;
 
     // Solution to Cryptopals set 01 challenge 07.
@@ -94,7 +94,7 @@ mod tests {
 
         let ecb_ciphertext = ciphertexts
             .iter()
-            .find(|ciphertext| is_aes_ecb_mode(ciphertext))
+            .find(|ciphertext| is_encoded_using_aes_ecb_mode(ciphertext))
             .unwrap();
         let ecb_ciphertext_hex = hex::encode(ecb_ciphertext);
         assert_eq!(ecb_ciphertext_hex, expected_ciphertext_hex);
