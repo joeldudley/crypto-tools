@@ -30,7 +30,7 @@ pub fn decrypt_ecb_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
     decrypter.pad(false);
 
     let mut cbc_ciphertext = vec![0; ciphertext.len() + block_size];
-    let count = decrypter.update(&ciphertext, &mut cbc_ciphertext).unwrap();
+    let count = decrypter.update(ciphertext, &mut cbc_ciphertext).unwrap();
     decrypter.finalize(&mut cbc_ciphertext[count..]).unwrap();
 
     cbc_ciphertext
@@ -44,13 +44,12 @@ pub fn decrypt_cbc_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
     let mut pos = 0;
 
     while pos * 16 < ciphertext.len() {
-        let previous_block;
-        if pos == 0 {
-            previous_block = iv;
+        let previous_block= if pos == 0 {
+            iv
         } else {
-            previous_block = &ciphertext[(pos - 1) * block_size..pos * block_size];
-        }
-        let plaintext_block = xor_vecs(&cbc_ciphertext[pos * block_size..(pos + 1) * block_size], &previous_block);
+            &ciphertext[(pos - 1) * block_size..pos * block_size]
+        };
+        let plaintext_block = xor_vecs(&cbc_ciphertext[pos * block_size..(pos + 1) * block_size], previous_block);
         plaintext.push(plaintext_block);
         pos += 1
     }
