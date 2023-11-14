@@ -42,7 +42,7 @@ pub fn decrypt_cbc_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
     let mut pos = 0;
 
     while pos * 16 < ciphertext.len() {
-        let previous_block= if pos == 0 {
+        let previous_block = if pos == 0 {
             iv
         } else {
             &ciphertext[(pos - 1) * block_size..pos * block_size]
@@ -89,7 +89,10 @@ mod tests {
     #[test]
     fn can_detect_ecb_mode() {
         let ciphertexts = read_hex_lines("./data/8.txt");
-        let expected_ciphertext_hex = "d880619740a8a19b7840a8a31c810a3d08649af70dc06f4fd5d2d69c744cd283e2dd052f6b641dbf9d11b0348542bb5708649af70dc06f4fd5d2d69c744cd2839475c9dfdbc1d46597949d9c7e82bf5a08649af70dc06f4fd5d2d69c744cd28397a93eab8d6aecd566489154789a6b0308649af70dc06f4fd5d2d69c744cd283d403180c98c8f6db1f2a3f9c4040deb0ab51b29933f2c123c58386b06fba186a";
+        let expected_ciphertext_hex = "d880619740a8a19b7840a8a31c810a3d08649af70dc06f4fd5d2d6\
+        9c744cd283e2dd052f6b641dbf9d11b0348542bb5708649af70dc06f4fd5d2d69c744cd2839475c9dfdbc1d4659\
+        7949d9c7e82bf5a08649af70dc06f4fd5d2d69c744cd28397a93eab8d6aecd566489154789a6b0308649af70dc0\
+        6f4fd5d2d69c744cd283d403180c98c8f6db1f2a3f9c4040deb0ab51b29933f2c123c58386b06fba186a";
 
         let ecb_ciphertext = ciphertexts
             .iter()
@@ -126,6 +129,5 @@ mod tests {
     #[test]
     fn can_detect_ecb_vs_cbc_mode() {
         // TODO: Implement
-
     }
 }
