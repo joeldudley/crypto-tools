@@ -59,6 +59,7 @@ pub fn decrypt_cbc_mode(ciphertext: &[u8], iv: &[u8], key: &[u8]) -> Vec<u8> {
 mod tests {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
+
     use base64::Engine;
     use base64::engine::general_purpose;
 
@@ -119,5 +120,12 @@ mod tests {
             b"YELLOW SUBMARINE",
         );
         assert_eq!(plaintext[0..plaintext.len() - 4], expected_plaintext);
+    }
+
+    // Solution to Cryptopals set 02 challenge 11.
+    #[test]
+    fn can_detect_ecb_vs_cbc_mode() {
+        // TODO: Implement
+
     }
 }
